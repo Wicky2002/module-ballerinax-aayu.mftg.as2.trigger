@@ -12,7 +12,7 @@ info:
     url: 'https://mftgateway.com/contact/'
   externalDocs:
     description: MFT Gateway API documentation
-    url: 'https://aayutechnologies.com/docs/product/mft-gateway/'
+    url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
 defaultContentType: application/json
 channels:
   messages:
@@ -33,6 +33,11 @@ channels:
         payload:
           $ref: '#/components/schemas/MessageFailedEvent'
         summary: Message failed event.
+      incompleteMessage:
+        x-ballerina-event-type: "MESSAGE.SEND.INCOMPLETE"
+        payload:
+          $ref: '#/components/schemas/MessageIncompleteEvent'
+        summary: Outgoing message incomplete event.
 operations:
   messages:
     action: receive
@@ -42,21 +47,24 @@ operations:
       - $ref: "#/channels/messages/messages/receivedMessage"
       - $ref: "#/channels/messages/messages/sentMessage"
       - $ref: "#/channels/messages/messages/failedMessage"
+      - $ref: "#/channels/messages/messages/incompleteMessage"
 components:
   schemas:
     MessageReceivedEvent:
       additionalProperties: true
       externalDocs:
         description: 'Event documentation received message'
-        url: 'https://aayutechnologies.com/docs/product/mft-gateway/webhook-integration/#21-received-message'
+        url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
       required:
+        - service
         - to
-        - messageAS2ID
+        - messageId
+        - messageIdentifier
         - messageSubject
-        - partnerAS2ID
+        - timestamp
+        - partnerIdentifier
         - partnerName
-        - attachments
-        - stationAS2ID
+        - stationIdentifier
         - stationName
         - bucketName
         - tenantName
@@ -65,30 +73,44 @@ components:
         - eventType
         - receivedAt
       properties:
+        service:
+          type: string
+          description: Service the event came from (as2 or sftp).
         to:
           type: string
           description: Email address of the receiving party.
-        messageAS2ID:
+        messageId:
+          type: integer
+          description: Numeric identifier of the message.
+        messageIdentifier:
           type: string
-          description: AS2 identifier of the message.
+          description: AS2 message identifier of the message.
         messageSubject:
           type: string
           description: Subject of the message.
-        partnerAS2ID:
+        timestamp:
+          type: integer
+          description: Epoch milliseconds at which the event was created.
+        partnerIdentifier:
           type: string
-          description: AS2 identifier of the Partner.
+          description: Identifier of the Partner.
         partnerName:
           type: string
           description: Name of the Partner.
-        stationAS2ID:
+        stationIdentifier:
           type: string
-          description: AS2 identifier of the Station.
+          description: Identifier of the Station.
         stationName:
           type: string
           description: Name of the Station.
+        attachments:
+          type: array
+          items:
+            type: string
+          description: Paths of the message attachments.
         bucketName:
           type: string
-          description: Name of the AWS.
+          description: Name of the bucket the message files are stored in.
         tenantName:
           type: string
           description: Name of the tenant.
@@ -97,63 +119,75 @@ components:
           description: ID of the tenant.
         tenantEmail:
           type: string
-          description: Email associated with tenant.
+          description: Email associated with the tenant.
         eventType:
           type: string
           description: Event type.
-        attachments:
-          type: array
-          items:
-            type: string
-          description: Path of attachments.
         receivedAt:
           type: integer
-          description: 'Timestamp of which message received.'
+          description: Epoch milliseconds at which the message was received.
     MessageSentEvent:
       additionalProperties: true
       externalDocs:
         description: 'Event documentation sent message'
-        url: 'https://aayutechnologies.com/docs/product/mft-gateway/webhook-integration/#22-sent-message'
+        url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
       required:
+        - service
         - to
-        - messageAS2ID
+        - messageId
+        - messageIdentifier
         - messageSubject
-        - partnerAS2ID
+        - timestamp
+        - partnerIdentifier
         - partnerName
-        - stationAS2ID
+        - stationIdentifier
         - stationName
+        - attachments
         - bucketName
         - tenantName
         - tenantId
         - tenantEmail
         - eventType
-        - attachments
         - sentAt
       properties:
+        service:
+          type: string
+          description: Service the event came from (as2 or sftp).
         to:
           type: string
           description: Email address of the receiving party.
-        messageAS2ID:
+        messageId:
+          type: integer
+          description: Numeric identifier of the message.
+        messageIdentifier:
           type: string
-          description: AS2 identifier of the message.
+          description: AS2 message identifier of the message.
         messageSubject:
           type: string
           description: Subject of the message.
-        partnerAS2ID:
+        timestamp:
+          type: integer
+          description: Epoch milliseconds at which the event was created.
+        partnerIdentifier:
           type: string
-          description: AS2 identifier of the Partner.
+          description: Identifier of the Partner.
         partnerName:
           type: string
           description: Name of the Partner.
-        stationAS2ID:
+        stationIdentifier:
           type: string
-          description: AS2 identifier of the Station.
+          description: Identifier of the Station.
         stationName:
           type: string
           description: Name of the Station.
+        attachments:
+          type: array
+          items:
+            type: string
+          description: Paths of the message attachments.
         bucketName:
           type: string
-          description: Name of the AWS.
+          description: Name of the bucket the message files are stored in.
         tenantName:
           type: string
           description: Name of the tenant.
@@ -162,66 +196,78 @@ components:
           description: ID of the tenant.
         tenantEmail:
           type: string
-          description: Email associated with tenant.
+          description: Email associated with the tenant.
         eventType:
           type: string
           description: Event type.
-        attachments:
-          type: array
-          items:
-            type: string
-          description: Path of attachments.
         sentAt:
           type: integer
-          description: 'Timestamp of which message sent.'
+          description: Epoch milliseconds at which the message was sent.
     MessageFailedEvent:
       additionalProperties: true
       externalDocs:
-        description: 'Event documentation failed message'
-        url: 'https://aayutechnologies.com/docs/product/mft-gateway/webhook-integration/#23-send-failure'
+        description: 'Event documentation send failure'
+        url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
       required:
+        - service
         - to
-        - messageAS2ID
+        - messageId
+        - messageIdentifier
         - messageSubject
-        - partnerAS2ID
+        - timestamp
+        - partnerIdentifier
         - partnerName
-        - stationAS2ID
+        - stationIdentifier
         - stationName
+        - attachments
         - bucketName
         - tenantName
         - tenantId
         - tenantEmail
         - eventType
-        - attachments
         - failureReason
         - failures
         - lastAttemptTime
-        - subject
+        - sentAt
       properties:
+        service:
+          type: string
+          description: Service the event came from (as2 or sftp).
         to:
           type: string
           description: Email address of the receiving party.
-        messageAS2ID:
+        messageId:
+          type: integer
+          description: Numeric identifier of the message.
+        messageIdentifier:
           type: string
-          description: AS2 identifier of the message.
+          description: AS2 message identifier of the message.
         messageSubject:
           type: string
           description: Subject of the message.
-        partnerAS2ID:
+        timestamp:
+          type: integer
+          description: Epoch milliseconds at which the event was created.
+        partnerIdentifier:
           type: string
-          description: AS2 identifier of the Partner.
+          description: Identifier of the Partner.
         partnerName:
           type: string
           description: Name of the Partner.
-        stationAS2ID:
+        stationIdentifier:
           type: string
-          description: AS2 identifier of the Station.
+          description: Identifier of the Station.
         stationName:
           type: string
           description: Name of the Station.
+        attachments:
+          type: array
+          items:
+            type: string
+          description: Paths of the message attachments.
         bucketName:
           type: string
-          description: Name of the AWS.
+          description: Name of the bucket the message files are stored in.
         tenantName:
           type: string
           description: Name of the tenant.
@@ -230,24 +276,96 @@ components:
           description: ID of the tenant.
         tenantEmail:
           type: string
-          description: Email associated with tenant.
+          description: Email associated with the tenant.
         eventType:
           type: string
           description: Event type.
+        failureReason:
+          type: string
+          description: Reason the send failed.
+        failures:
+          type: integer
+          description: Number of failed attempts.
+        lastAttemptTime:
+          type: integer
+          description: Epoch milliseconds of the last failed attempt.
+        sentAt:
+          type: integer
+          description: Epoch milliseconds at which the send was first attempted.
+    MessageIncompleteEvent:
+      additionalProperties: true
+      externalDocs:
+        description: 'Event documentation incomplete outgoing message'
+        url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
+      required:
+        - service
+        - to
+        - messageId
+        - messageIdentifier
+        - messageSubject
+        - timestamp
+        - partnerIdentifier
+        - partnerName
+        - stationIdentifier
+        - stationName
+        - attachments
+        - bucketName
+        - tenantName
+        - tenantId
+        - tenantEmail
+        - eventType
+        - sentAt
+      properties:
+        service:
+          type: string
+          description: Service the event came from (as2 or sftp).
+        to:
+          type: string
+          description: Email address of the receiving party.
+        messageId:
+          type: integer
+          description: Numeric identifier of the message.
+        messageIdentifier:
+          type: string
+          description: AS2 message identifier of the message.
+        messageSubject:
+          type: string
+          description: Subject of the message.
+        timestamp:
+          type: integer
+          description: Epoch milliseconds at which the event was created.
+        partnerIdentifier:
+          type: string
+          description: Identifier of the Partner.
+        partnerName:
+          type: string
+          description: Name of the Partner.
+        stationIdentifier:
+          type: string
+          description: Identifier of the Station.
+        stationName:
+          type: string
+          description: Name of the Station.
         attachments:
           type: array
           items:
             type: string
-          description: Path of attachments.
-        failureReason:
+          description: Paths of the message attachments.
+        bucketName:
           type: string
-          description: 'SSL Handshake Exception.'
-        failures:
-          type: integer
-          description: 'No of fail events.'
-        lastAttemptTime:
-          type: integer
-          description: 'Timestamp of which message failed.'
-        subject:
+          description: Name of the bucket the message files are stored in.
+        tenantName:
           type: string
-          description: 'Subject of the failed message'
+          description: Name of the tenant.
+        tenantId:
+          type: integer
+          description: ID of the tenant.
+        tenantEmail:
+          type: string
+          description: Email associated with the tenant.
+        eventType:
+          type: string
+          description: Event type.
+        sentAt:
+          type: integer
+          description: Epoch milliseconds at which the outgoing message was recorded.
