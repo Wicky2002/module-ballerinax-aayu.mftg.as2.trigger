@@ -22,40 +22,70 @@ info:
     description: MFT Gateway API documentation
     url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
 defaultContentType: application/json
+# One channel per event, so the service types and remote functions keep the names of the trigger.aayu.mftg.as2
+# package this replaces (ReceivedMessageService.onMessageReceivedSuccess and so on).
 channels:
-  messages:
+  receivedMessage:
     address: /
     messages:
       receivedMessage:
         x-ballerina-event-type: "MESSAGE.RECEIVED.SUCCESS"
+        x-ballerina-event-label: MessageReceivedSuccess
         payload:
           $ref: '#/components/schemas/MessageReceivedEvent'
         summary: Message received event.
+  sentMessage:
+    address: /
+    messages:
       sentMessage:
         x-ballerina-event-type: "MESSAGE.SEND.SUCCESS"
+        x-ballerina-event-label: MessageSendSuccess
         payload:
           $ref: '#/components/schemas/MessageSentEvent'
         summary: Message sent event.
+  failedMessage:
+    address: /
+    messages:
       failedMessage:
         x-ballerina-event-type: "MESSAGE.SEND.FAILED"
+        x-ballerina-event-label: MessageSendFailed
         payload:
           $ref: '#/components/schemas/MessageFailedEvent'
         summary: Message failed event.
+  incompleteMessage:
+    address: /
+    messages:
       incompleteMessage:
         x-ballerina-event-type: "MESSAGE.SEND.INCOMPLETE"
+        x-ballerina-event-label: MessageSendIncomplete
         payload:
           $ref: '#/components/schemas/MessageIncompleteEvent'
         summary: Outgoing message incomplete event.
 operations:
-  messages:
+  receivedMessage:
     action: receive
     channel:
-      $ref: "#/channels/messages"
+      $ref: "#/channels/receivedMessage"
     messages:
-      - $ref: "#/channels/messages/messages/receivedMessage"
-      - $ref: "#/channels/messages/messages/sentMessage"
-      - $ref: "#/channels/messages/messages/failedMessage"
-      - $ref: "#/channels/messages/messages/incompleteMessage"
+      - $ref: "#/channels/receivedMessage/messages/receivedMessage"
+  sentMessage:
+    action: receive
+    channel:
+      $ref: "#/channels/sentMessage"
+    messages:
+      - $ref: "#/channels/sentMessage/messages/sentMessage"
+  failedMessage:
+    action: receive
+    channel:
+      $ref: "#/channels/failedMessage"
+    messages:
+      - $ref: "#/channels/failedMessage/messages/failedMessage"
+  incompleteMessage:
+    action: receive
+    channel:
+      $ref: "#/channels/incompleteMessage"
+    messages:
+      - $ref: "#/channels/incompleteMessage/messages/incompleteMessage"
 components:
   schemas:
     MessageReceivedEvent:
@@ -141,21 +171,8 @@ components:
         url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
       required:
         - service
-        - to
-        - messageId
-        - messageIdentifier
-        - messageSubject
-        - timestamp
-        - partnerIdentifier
-        - partnerName
-        - stationIdentifier
-        - stationName
-        - attachments
-        - bucketName
-        - tenantName
-        - tenantId
-        - tenantEmail
         - eventType
+        - messageId
         - sentAt
       properties:
         service:
@@ -211,6 +228,10 @@ components:
         sentAt:
           type: integer
           description: Epoch milliseconds at which the message was sent.
+        failureReason:
+          type: string
+          nullable: true
+          description: Always null for a sent message.
     MessageFailedEvent:
       additionalProperties: true
       externalDocs:
@@ -218,25 +239,11 @@ components:
         url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
       required:
         - service
-        - to
         - messageId
-        - messageIdentifier
-        - messageSubject
-        - timestamp
-        - partnerIdentifier
-        - partnerName
-        - stationIdentifier
-        - stationName
-        - attachments
-        - bucketName
-        - tenantName
-        - tenantId
-        - tenantEmail
         - eventType
         - failureReason
         - failures
         - lastAttemptTime
-        - sentAt
       properties:
         service:
           type: string
@@ -307,20 +314,7 @@ components:
         url: 'https://aayutechnologies.com/docs/product/mft-gateway/integrations/webhook-integration/'
       required:
         - service
-        - to
         - messageId
-        - messageIdentifier
-        - messageSubject
-        - timestamp
-        - partnerIdentifier
-        - partnerName
-        - stationIdentifier
-        - stationName
-        - attachments
-        - bucketName
-        - tenantName
-        - tenantId
-        - tenantEmail
         - eventType
         - sentAt
       properties:
