@@ -57,8 +57,14 @@ allprojects {
 
 def moduleVersion = project.version.replace("-SNAPSHOT", "")
 
-task build {
-    dependsOn(':aayu.mftg.as2.trigger-ballerina:build')
+if (tasks.names.contains('build')) {
+    tasks.named('build') {
+        dependsOn(':aayu.mftg.as2.trigger-ballerina:build')
+    }
+} else {
+    task build {
+        dependsOn(':aayu.mftg.as2.trigger-ballerina:build')
+    }
 }
 
 release {
