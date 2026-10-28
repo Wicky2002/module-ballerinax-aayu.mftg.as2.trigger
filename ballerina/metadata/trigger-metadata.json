@@ -3,7 +3,7 @@
   "listeners": [
     {
       "id": "$listener",
-      "doc": "Webhook listener that dispatches each inbound Aayu MFT Gateway webhook event to the concrete service type matching its event family.",
+      "doc": "Webhook listener that dispatches each inbound Aayu MFTG AS2 webhook event to the concrete service type matching its event family.",
       "type": {
         "name": "Listener"
       },

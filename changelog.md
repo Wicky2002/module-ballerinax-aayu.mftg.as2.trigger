@@ -12,4 +12,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The `MESSAGE.SEND.INCOMPLETE` event, through `IncompleteMessageService`.
 - Payload records that match MFT Gateway's documented payloads, so sent, failed and incomplete events bind.
 - Services on the trigger listener are listed by `bal build --export-endpoints`, through a compiler plugin packaged with the trigger. Endpoint export needs Ballerina 2201.13.6 or later.
-- Trigger metadata under `metadata/` for low-code tooling.
+- Trigger metadata and icons under `metadata/` for low-code tooling.
