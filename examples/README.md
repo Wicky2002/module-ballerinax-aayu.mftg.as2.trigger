@@ -8,11 +8,11 @@ The `ballerinax/aayu.mftg.as2.trigger` connector provides practical examples ill
 
 ## Prerequisites
 
-Download the webhook public key from MFT Gateway and put it in a `Config.toml` in the example's directory, as each example's README shows, then register the running example as an AS2 webhook, as described in the [Setup guide](../ballerina/README.md#setup-guide).
+Register an AS2 webhook in MFT Gateway with payload signing on and save it, then download the webhook public key, put it in a `Config.toml` in the example's directory (each example's README shows the key), and start the example, as described in the [Setup guide](../ballerina/README.md#setup-guide).
 
 ## Running an example
 
-Execute the following commands to build an example from the source:
+Execute the following commands from an example's directory (for example `cd as2-audit-trail`) to build it from the source:
 
 * To build an example:
 
