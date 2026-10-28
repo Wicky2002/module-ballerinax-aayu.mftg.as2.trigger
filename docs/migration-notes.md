@@ -31,8 +31,8 @@ configurable aayu:ListenerConfig userInput = ?;   // webhookSecret = the public 
 listener aayu:Listener aayuListener = new (userInput, 8090);
 ```
 
-Turn on **Signature for Webhook Payload** for the webhook in MFT Gateway. Unsigned deliveries are
-rejected.
+Turn on **Generate Signature For Webhook Payload** for the webhook in MFT Gateway. Unsigned
+deliveries are rejected.
 
 ## Breaking change: payload fields follow MFT Gateway's documented payloads
 

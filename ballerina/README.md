@@ -33,24 +33,24 @@ using [ngrok](https://ngrok.com/) to expose your local listener to the internet.
    <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/ngrok-forwarding.png" alt="ngrok forwarding a public URL to localhost:8090" width="600">
 
 2. In MFT Gateway, open **Integrations > Webhooks** from the left navigation menu and select the
-   **AS2** tab.
+   **AS2** tab under **General Configurations**.
 
-   <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/webhook-settings-page.png" alt="MFT Gateway Integrations > Webhooks page on the AS2 tab" width="600">
+   <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/webhook-settings-page.png" alt="MFT Gateway Webhook Integration page on the AS2 tab" width="600">
 
-3. Add a webhook:
+3. Click **Add New Webhook** and fill it in:
+   - **Station**: the station you want events for, or **All Stations**.
    - **Webhook URL**: the ngrok forwarding URL from step 1.
-   - **Station** and **Partner**: the ones you want events for, or **All Stations** and
-     **All Partners**.
-   - Turn on **Signature for Webhook Payload**. The listener rejects unsigned requests, so this
-     is required.
+   - Under **Advanced Configurations**, turn on **Generate Signature For Webhook Payload**. The
+     listener rejects unsigned requests, so this is required.
 
-   <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/webhook-form-filled.png" alt="MFT Gateway webhook form with the ngrok URL and payload signing turned on" width="600">
+   <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/webhook-form-filled.png" alt="MFT Gateway webhook form with the ngrok URL and Generate Signature For Webhook Payload turned on" width="600">
 
-4. Download the public key from the same page. MFT Gateway signs each payload with its private key
-   and sends the signature in the `mftg-wh-signature` header; the listener checks it with this
-   public key.
+4. Click **Integrate Webhooks** to save. A **Webhook Public Key** button then appears under the
+   signature note; click it to download `webhook-pubkey.pem`. MFT Gateway signs each payload with a key pair dedicated to
+   your account and sends the signature in the `mftg-wh-signature` header; the listener checks it
+   with this public key.
 
-   <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/webhook-public-key.png" alt="MFT Gateway webhook signing section with the public key download" width="600">
+   <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/webhook-public-key.png" alt="MFT Gateway signature note with the mftg-wh-signature header and the Webhook Public Key download button" width="600">
 
 5. Put the whole public key, including the `-----BEGIN PUBLIC KEY-----` and
    `-----END PUBLIC KEY-----` lines, in a `Config.toml` next to your service (see
@@ -59,12 +59,15 @@ using [ngrok](https://ngrok.com/) to expose your local listener to the internet.
    ```toml
    [<your_org>.<your_module_name>.userInput]
    webhookSecret = """-----BEGIN PUBLIC KEY-----
-   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+   MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA...
    -----END PUBLIC KEY-----"""
    ```
 
-6. Send an AS2 message to one of your partners, or have a partner send one to your station. Each
-   delivery shows up in the ngrok console with `200 OK`, and your handler runs.
+6. Send an AS2 message from **Messages > Compose** to one of your partners, or have a partner send
+   one to your station. Each delivery shows up in the ngrok console with `200 OK`, and your handler
+   runs. To try it without a real trading partner, add a partner whose AS2 identifier, URL and
+   certificate are your own station's (shown under **View Partner Configuration** on the station),
+   and send to it: you get both a sent and a received event.
 
    <img src="https://raw.githubusercontent.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger/main/docs/setup/resources/webhook-confirmed.png" alt="ngrok console showing MFT Gateway webhook deliveries answered with 200 OK" width="600">
 

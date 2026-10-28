@@ -18,6 +18,8 @@ The spec was migrated from `asyncapi-triggers/asyncapi/aayu.mftg.as2/asyncapi.ym
 
 The four documented AS2 example payloads are the test payloads in `ballerina/tests/resources/trigger_payloads`. They were also signed with Aayu's own `@aayu-tech/json-sign` 1.0.1 and posted to the generated listener configured with the matching public key: all four were accepted and dispatched, and so was one reformatted with different whitespace; a changed field, a missing signature and a signature from another key were rejected with 401.
 
+Checked live against MFT Gateway on 2026-10-28: a webhook with payload signing on, pointing at the listener configured with the downloaded webhook public key, delivered `MESSAGE.SEND.SUCCESS` and `MESSAGE.RECEIVED.SUCCESS` for a test message; both were accepted and dispatched to `onMessageSendSuccess` and `onMessageReceivedSuccess`, and the real payloads (including `attachments` as an array) bound to the generated records. An unsigned request to the same URL was rejected with 401.
+
 ## Not changed
 
 - SFTP events use the same webhook but differ (no station fields; failure type is `MESSAGE.SEND.FAILURE`). Spec stays AS2 only to match the package name.
