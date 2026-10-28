@@ -9,7 +9,7 @@
     "partnerName": "Partner Name",
     "stationIdentifier": "mystationid",
     "stationName": "Station Name",
-    "Attachments": ["AS2/files/mystationid/mypartnerid/inbox/..."],
+    "attachments": ["AS2/files/mystationid/mypartnerid/inbox/..."],
     "bucketName": "mftg-bucketname.test.mftgateway.com",
     "tenantName": "abc.test.mftgateway.com",
     "tenantId": 301713382762123,

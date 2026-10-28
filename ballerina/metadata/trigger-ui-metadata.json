@@ -249,10 +249,6 @@
     }
   ],
   "artifactInfo": {
-    "displayLabel": "Aayu MFT Gateway Event Integration",
-    "icon": {
-      "lightPath": "icons/light.svg",
-      "darkPath": "icons/dark.svg"
-    }
+    "displayLabel": "Aayu MFT Gateway Event Integration"
   }
 }
