@@ -23,7 +23,7 @@ Checked live against MFT Gateway on 2026-10-28: a webhook with payload signing o
 ## Not changed
 
 - SFTP events use the same webhook but differ (no station fields; failure type is `MESSAGE.SEND.FAILURE`). Spec stays AS2 only to match the package name.
-- The documented AS2 received example spells `Attachments` capitalised, probably a doc typo; `attachments` is optional for received events.
+- The documented AS2 received example spells `Attachments` capitalised. The live delivery uses `attachments`, so the test payload uses the lowercase key; `attachments` stays optional for received events.
 - Payload schemas are otherwise as in the monorepo.
 
 Author: Dinuka Wickramasinghe
