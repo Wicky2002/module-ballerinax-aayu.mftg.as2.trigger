@@ -5,6 +5,6 @@ name = "aayu.mftg.as2.trigger"
 version = "@toml.version@"
 license = ["Apache-2.0"]
 authors = ["Ballerina"]
-keywords = ["Area/B2B Integration", "Vendor/Aayu", "Cost/Paid", "Type/Trigger"]
+keywords = ["Name/Aayu MFT Gateway AS2 Trigger", "Area/Cloud & Infrastructure", "Vendor/Aayu", "Cost/Paid", "Type/Trigger"]
 repository = "https://github.com/ballerina-platform/module-ballerinax-aayu.mftg.as2.trigger"
 include = ["metadata/**"]

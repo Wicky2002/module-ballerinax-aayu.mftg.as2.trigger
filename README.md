@@ -16,6 +16,15 @@ The Aayu MFT Gateway AS2 Trigger module allows you to listen to the AS2 webhook 
 This module receives MFT Gateway's webhook deliveries directly - it does not call the MFT Gateway
 API on your behalf. It covers the AS2 events only; SFTP webhooks use different payloads.
 
+### Key features
+
+- Receives the four MFT Gateway AS2 events: message received, sent, send failed and send incomplete
+- Verifies every delivery with the webhook public key from MFT Gateway (RSA with SHA-256, `mftg-wh-signature`)
+- Typed payload records matching MFT Gateway's documented AS2 payloads
+- Acknowledges each delivery before running your handler, so a slow or failing handler doesn't cause retries
+- Services can be attached on their own path, so several triggers and HTTP services can share one port
+- Trigger services are listed by `bal build --export-endpoints` (Ballerina 2201.13.6 or later)
+
 ## Setup guide
 
 Before using this trigger in your Ballerina application, you need an MFT Gateway account with at
