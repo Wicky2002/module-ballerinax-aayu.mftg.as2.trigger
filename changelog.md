@@ -4,7 +4,7 @@ This file contains all the notable changes done to the Ballerina Aayu MFT Gatewa
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0]
 
 ### Added
 - The `aayu.mftg.as2.trigger` package, replacing `trigger.aayu.mftg.as2` from the `asyncapi-triggers` monorepo. It is generated from the AsyncAPI definition in `docs/spec` with the Ballerina AsyncAPI tool. See the [migration notes](docs/migration-notes.md) for what changed from `trigger.aayu.mftg.as2`.
