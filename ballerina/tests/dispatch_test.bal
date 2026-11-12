@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/crypto;
+import ballerina/data.jsondata;
 import ballerina/http;
 import ballerina/io;
 import ballerina/lang.runtime;
@@ -27,6 +28,7 @@ const TRIGGER_PAYLOAD_DIR = "tests/resources/trigger_payloads";
 
 isolated map<boolean> triggerFired = {};
 isolated map<json> boundPayloads = {};
+isolated map<json> boundJson = {};
 
 listener Listener triggerTestListener = check new ({webhookSecret: TRIGGER_TEST_PUBLIC_KEY}, TRIGGER_TEST_PORT);
 
@@ -34,6 +36,10 @@ final http:Client triggerClient = check new (string `http://localhost:${TRIGGER_
 
 service ReceivedMessageService on triggerTestListener {
     isolated remote function onMessageReceivedSuccess(MessageReceivedEvent payload) returns error? {
+        readonly & json received = jsondata:toJson(payload).cloneReadOnly();
+        lock {
+            boundJson["ReceivedMessageService.onMessageReceivedSuccess"] = received;
+        }
         lock {
             triggerFired["ReceivedMessageService.onMessageReceivedSuccess"] = true;
         }
@@ -42,6 +48,10 @@ service ReceivedMessageService on triggerTestListener {
 
 service SentMessageService on triggerTestListener {
     isolated remote function onMessageSendSuccess(MessageSentEvent payload) returns error? {
+        readonly & json received = jsondata:toJson(payload).cloneReadOnly();
+        lock {
+            boundJson["SentMessageService.onMessageSendSuccess"] = received;
+        }
         lock {
             triggerFired["SentMessageService.onMessageSendSuccess"] = true;
         }
@@ -50,6 +60,10 @@ service SentMessageService on triggerTestListener {
 
 service FailedMessageService on triggerTestListener {
     isolated remote function onMessageSendFailed(MessageFailedEvent payload) returns error? {
+        readonly & json received = jsondata:toJson(payload).cloneReadOnly();
+        lock {
+            boundJson["FailedMessageService.onMessageSendFailed"] = received;
+        }
         lock {
             triggerFired["FailedMessageService.onMessageSendFailed"] = true;
         }
@@ -58,6 +72,10 @@ service FailedMessageService on triggerTestListener {
 
 service IncompleteMessageService on triggerTestListener {
     isolated remote function onMessageSendIncomplete(MessageIncompleteEvent payload) returns error? {
+        readonly & json received = jsondata:toJson(payload).cloneReadOnly();
+        lock {
+            boundJson["IncompleteMessageService.onMessageSendIncomplete"] = received;
+        }
         lock {
             triggerFired["IncompleteMessageService.onMessageSendIncomplete"] = true;
         }
@@ -110,11 +128,50 @@ function waitForDispatch(string trackerKey) returns boolean {
     return false;
 }
 
+function boundJsonOf(string trackerKey) returns json {
+    lock {
+        return boundJson[trackerKey].clone();
+    }
+}
+
+function deliveredEvent(json bound, json fixture) returns json {
+    return fixture is json[] && fixture.length() == 1 && bound is map<json>
+        ? fixture[0] : fixture;
+}
+
+function assertBindsFixture(json bound, json fixture, string at) {
+    if fixture is map<json> {
+        test:assertTrue(bound is map<json>, string `${at} should have bound to an object`);
+        if bound is map<json> {
+            foreach [string, json] [key, value] in fixture.entries() {
+                assertBindsFixture(bound[key], value, string `${at}.${key}`);
+            }
+        }
+    } else if fixture is json[] {
+        test:assertTrue(bound is json[] && bound.length() == fixture.length(),
+                string `${at} should have bound to an array of ${fixture.length()}`);
+        if bound is json[] && bound.length() == fixture.length() {
+            foreach int i in 0 ..< fixture.length() {
+                assertBindsFixture(bound[i], fixture[i], string `${at}[${i}]`);
+            }
+        }
+    } else if fixture is int|float|decimal && bound is int|float|decimal {
+        test:assertEquals(<decimal>bound, <decimal>fixture,
+                string `${at} should have bound unchanged`);
+    } else {
+        test:assertEquals(bound, fixture,
+                string `${at} should have bound unchanged`);
+    }
+}
+
 @test:Config {}
 function testMessageReceivedSuccessDispatch() returns error? {
     http:Response response = check sendSignedTriggerWebhook("MESSAGE.RECEIVED.SUCCESS");
     test:assertEquals(response.statusCode, http:STATUS_OK);
     test:assertTrue(waitForDispatch("ReceivedMessageService.onMessageReceivedSuccess"), "ReceivedMessageService.onMessageReceivedSuccess should have fired");
+    json fixture = check io:fileReadJson(string `${TRIGGER_PAYLOAD_DIR}/MESSAGE.RECEIVED.SUCCESS.json`);
+    json received = boundJsonOf("ReceivedMessageService.onMessageReceivedSuccess");
+    assertBindsFixture(received, deliveredEvent(received, fixture), "MessageReceivedEvent");
 }
 
 @test:Config {}
@@ -122,6 +179,9 @@ function testMessageSendSuccessDispatch() returns error? {
     http:Response response = check sendSignedTriggerWebhook("MESSAGE.SEND.SUCCESS");
     test:assertEquals(response.statusCode, http:STATUS_OK);
     test:assertTrue(waitForDispatch("SentMessageService.onMessageSendSuccess"), "SentMessageService.onMessageSendSuccess should have fired");
+    json fixture = check io:fileReadJson(string `${TRIGGER_PAYLOAD_DIR}/MESSAGE.SEND.SUCCESS.json`);
+    json received = boundJsonOf("SentMessageService.onMessageSendSuccess");
+    assertBindsFixture(received, deliveredEvent(received, fixture), "MessageSentEvent");
 }
 
 @test:Config {}
@@ -129,6 +189,9 @@ function testMessageSendFailedDispatch() returns error? {
     http:Response response = check sendSignedTriggerWebhook("MESSAGE.SEND.FAILED");
     test:assertEquals(response.statusCode, http:STATUS_OK);
     test:assertTrue(waitForDispatch("FailedMessageService.onMessageSendFailed"), "FailedMessageService.onMessageSendFailed should have fired");
+    json fixture = check io:fileReadJson(string `${TRIGGER_PAYLOAD_DIR}/MESSAGE.SEND.FAILED.json`);
+    json received = boundJsonOf("FailedMessageService.onMessageSendFailed");
+    assertBindsFixture(received, deliveredEvent(received, fixture), "MessageFailedEvent");
 }
 
 @test:Config {}
@@ -136,6 +199,9 @@ function testMessageSendIncompleteDispatch() returns error? {
     http:Response response = check sendSignedTriggerWebhook("MESSAGE.SEND.INCOMPLETE");
     test:assertEquals(response.statusCode, http:STATUS_OK);
     test:assertTrue(waitForDispatch("IncompleteMessageService.onMessageSendIncomplete"), "IncompleteMessageService.onMessageSendIncomplete should have fired");
+    json fixture = check io:fileReadJson(string `${TRIGGER_PAYLOAD_DIR}/MESSAGE.SEND.INCOMPLETE.json`);
+    json received = boundJsonOf("IncompleteMessageService.onMessageSendIncomplete");
+    assertBindsFixture(received, deliveredEvent(received, fixture), "MessageIncompleteEvent");
 }
 
 @test:Config {}
